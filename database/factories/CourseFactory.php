@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Course>
@@ -20,6 +21,7 @@ class CourseFactory extends Factory
             "name" => $this->faker->word(),
             "description" => $this->faker->text(),
             "workload" => $this->faker->numberBetween(10, 100),
+            "user_id" => $this->faker->numberBetween(1, 6)
         ];
     }
 }
