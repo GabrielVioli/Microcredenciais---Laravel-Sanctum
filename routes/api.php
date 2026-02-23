@@ -19,7 +19,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('/courses', [CourseController::class, 'index']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
 
-    
+    Route::get('/courses/{id}/students', [CourseController::class, 'Credentials']);
+
 });
 
 
