@@ -9,7 +9,7 @@ use App\Models\User;
 use App\Models\Student;
 use App\Models\Course;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -21,34 +21,61 @@ class UserController extends Controller
 
     public function verifyBadge($hash) {
 
+        $credential = Credential::where('token', $hash)->first();
+
+        if($credential) {
+            $courseData = Course::find($credential->course_id);
+            $studentData = Student::find($credential->student_id);
+
+            return response()->json([
+                'messsage' => "Aluno credenciado",
+                'Student_information' => $studentData,
+                'course_information' => $courseData
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Badge não encontrado ou inválido'
+        ], 404);
     }
 
 
     public function credentials(Request $request)
     {
         $validatedData = $request->validate([
-            "Name" => "required|string|max:255",
-            "email" => "required|string|email|max:255",
-            "course" => "required|string|max:255",
-        ]);
+            "name" => "required|string|max:255|exists:students,name",
+            "email" => "required|string|email|max:255|exists:students,email",
+            "course" => "required|integer|exists:courses,id"
+            ],
+            [
+                'name.exists' => 'O aluno informado não foi encontrado na base de dados.',
+                'email.exists' => 'O e-mail informado não pertence a nenhum aluno cadastrado.',
+                'course.exists' => 'O ID do curso informado não existe no sistema.',
+                'required' => 'O campo :attribute é obrigatório.'
+            ]
+        );
+
+   
 
         $student = Student::where('email', $validatedData['email'])->firstOrFail();
-        $course = Course::where('name', $validatedData['course'])->firstOrFail();
+        $course = Course::findOrFail($validatedData['course']);
 
-        $user = Auth::user()->id();
+    
+        
+        $userId = Auth::id();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $badgeCode = Str::uuid()->toString();
 
         $credential = Credential::create([
             'student_id' => $student->id,
             'course_id' => $course->id,
-            'token' => $token,
-            'user_id' => $user
+            'user_id' => $userId,
+            'token' => $badgeCode,
         ]);
 
         return response()->json([
             'message' => 'Credencial criada com sucesso!',
-            'token' => $token
+            'token' => $badgeCode
         ], 201);
     }
 
@@ -70,7 +97,10 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'success to create a user',
                 'data' => $createUser,
+                'token' => $createUser->createToken('auth_token')->plainTextToken
             ], 201);
+
+
         }
 
         return response()->json([
@@ -82,20 +112,23 @@ class UserController extends Controller
 
     public function login(Request $request) {
         $data = $request->validate([
-            "name" => "required|string|max:255",
             "email" => "required|string|email|max:255",
             "password" => "required|string|min:8",
         ]);
 
         if(Auth::attempt($data)) {
+        $user = Auth::user();
+
             return response()->json([
                 'message' => "authenticable",
                 'data' => Auth::user(),
+                'token' =>  $user->createToken('auth_token')->plainTextToken
             ], 200);
         }
 
         return response()->json([
             'message' => 'failed to authenticable',
+            
         ], 400);
     }
 

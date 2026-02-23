@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Credential extends Model
 {
     protected $fillable = [
-        'token'
+        'token',
+        'student_id',
+        'user_id',
+        'course_id'
     ];
 
 

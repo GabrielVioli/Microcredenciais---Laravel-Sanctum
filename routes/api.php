@@ -9,7 +9,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::middleware('auth:sanctum')->match(['get', 'post'], '/credentials', [UserController::class, 'credentials']);
+Route::middleware('auth:sanctum')->post('/credentials', [UserController::class, 'credentials']);
 
 
 Route::post('/cadastro', [UserController::class, 'store'])->name('cadastro');
