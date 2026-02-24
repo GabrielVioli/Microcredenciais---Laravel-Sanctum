@@ -1,59 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Microcredenciais API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API RESTful desenvolvida em Laravel para o gerenciamento de estudantes, cursos e emissão de microcredenciais digitais. O sistema utiliza o Laravel Sanctum para autenticação segura de rotas através de tokens.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Estrutura do Banco de Dados
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Baseado nas migrations e modelos do projeto, o sistema possui as seguintes entidades principais:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Users (Instituições)
+Gerenciamento de usuários e autenticação da API. Representa as instituições de ensino que emitem as credenciais.
+- `id`
+- `name`
+- `email`
+- `password`
+- `remember_token`
+- `timestamps`
 
-## Learning Laravel
+### Students (Estudantes)
+Armazena os dados dos estudantes matriculados:
+- `id`
+- `name`
+- `email`
+- `phone`
+- `address`
+- `gender`
+- `timestamps`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Courses (Cursos)
+Armazena os cursos oferecidos pelas instituições:
+- `id`
+- `name`
+- `description`
+- `workload`
+- `user_id` (Vínculo com a instituição que criou o curso)
+- `timestamps`
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Credentials (Badges/Certificados)
+Tabela que gerencia o vínculo entre aluno e curso, registrando a emissão da microcredencial:
+- `id`
+- `student_id` (Vínculo com o estudante)
+- `course_id` (Vínculo com o curso)
+- `user_id` (Vínculo com a instituição emissora)
+- `token` (Hash UUID gerado automaticamente para verificação do badge)
+- `timestamps`
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Rotas da API
 
-### Premium Partners
+O sistema é dividido entre rotas públicas e rotas restritas às instituições autenticadas. O acesso protegido é feito via `Bearer Token`.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Rotas Públicas
+- `POST /api/cadastro`: Cadastra uma nova instituição.
+- `POST /api/login`: Autentica a instituição e retorna o token de acesso.
+- `GET /api/verify-badge/{hash}`: Verifica a autenticidade de um badge gerado e retorna os dados públicos do aluno e do curso.
 
-## Contributing
+### Rotas Autenticadas (Sanctum)
+Requerem o envio do Token no header `Authorization`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Instituição:**
+- `GET /api/user`: Retorna os dados da instituição autenticada.
 
-## Code of Conduct
+**Alunos:**
+- `POST /api/student`: Cadastra um novo aluno no ecossistema.
+- `GET /api/students/{id}`: Retorna os dados detalhados de um aluno específico.
+- `PUT /api/students/{id}`: Atualiza os dados cadastrais de um aluno.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**Cursos:**
+- `GET /api/courses`: Lista todos os cursos cadastrados.
+- `GET /api/courses/{id}`: Detalha as informações de um curso específico.
+- `GET /api/courses/{id}/students`: Lista todos os estudantes que possuem uma credencial (badge) válida para aquele curso.
 
-## Security Vulnerabilities
+**Credenciais:**
+- `POST /api/credentials`: Vincula um aluno a um curso e gera a credencial/token exclusivo.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Telas e Funcionamento
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Abaixo algumas demonstrações do sistema e da estrutura do banco em funcionamento:
+
+### Banco de Dados (SQLite)
+Estrutura das tabelas sendo preenchidas via Tinker e Seeders.
+![Banco de Dados](images/database.png)
+
+### Consultas na API (Postman)
+Retorno das requisições e estrutura do JSON.
+![Testes no Postman](images/postman.png)
+
+### Estrutura do Repositório
+![Repositório GitHub](images/github.png)
