@@ -1,6 +1,6 @@
 # Microcredenciais API
 
-API RESTful desenvolvida em Laravel para o gerenciamento de estudantes, cursos e emissão de microcredenciais digitais. O sistema utiliza o Laravel Sanctum para autenticação segura de rotas através de tokens.
+API RESTful desenvolvida em Laravel para o gerenciamento de estudantes, cursos e emissão de microcredenciais. O sistema utiliza o Laravel Sanctum para autenticação segura de rotas através de tokens.
 
 ---
 
@@ -8,86 +8,102 @@ API RESTful desenvolvida em Laravel para o gerenciamento de estudantes, cursos e
 
 Baseado nas migrations e modelos do projeto, o sistema possui as seguintes entidades principais:
 
-### Users (Instituições)
-Gerenciamento de usuários e autenticação da API. Representa as instituições de ensino que emitem as credenciais.
-- `id`
-- `name`
-- `email`
-- `password`
-- `remember_token`
-- `timestamps`
+### Users
+Gerenciamento de usuários e autenticação da API.
+- nome
+- email
+- password
 
-### Students (Estudantes)
-Armazena os dados dos estudantes matriculados:
-- `id`
-- `name`
-- `email`
-- `phone`
-- `address`
-- `gender`
-- `timestamps`
+### Students
+Armazena os dados dos estudantes:
+- nome
+- email
+- phone
+- address
+- gender
 
-### Courses (Cursos)
+### Courses
 Armazena os cursos oferecidos pelas instituições:
-- `id`
-- `name`
-- `description`
-- `workload`
-- `user_id` (Vínculo com a instituição que criou o curso)
-- `timestamps`
+- name
+- description
+- workload
+- user_id
 
-### Credentials (Badges/Certificados)
-Tabela que gerencia o vínculo entre aluno e curso, registrando a emissão da microcredencial:
-- `id`
-- `student_id` (Vínculo com o estudante)
-- `course_id` (Vínculo com o curso)
-- `user_id` (Vínculo com a instituição emissora)
-- `token` (Hash UUID gerado automaticamente para verificação do badge)
-- `timestamps`
+### Credentials
+Armazena os vínculos entre alunos e cursos (as microcredenciais emitidas):
+- student_id
+- course_id
+- user_id
+- token
 
 ---
 
 ## Rotas da API
 
-O sistema é dividido entre rotas públicas e rotas restritas às instituições autenticadas. O acesso protegido é feito via `Bearer Token`.
-
 ### Rotas Públicas
-- `POST /api/cadastro`: Cadastra uma nova instituição.
-- `POST /api/login`: Autentica a instituição e retorna o token de acesso.
-- `GET /api/verify-badge/{hash}`: Verifica a autenticidade de um badge gerado e retorna os dados públicos do aluno e do curso.
+- `POST /api/cadastro`: Criação de uma nova conta de usuário/instituição.
+- `POST /api/login`: Autenticação e geração do token de acesso.
+- `GET /api/verify-badge/{hash}`: Verificação pública da autenticidade de um badge.
 
 ### Rotas Autenticadas (Sanctum)
-Requerem o envio do Token no header `Authorization`.
+Requerem o envio do Token no header `Authorization: Bearer {token}`.
 
-**Instituição:**
-- `GET /api/user`: Retorna os dados da instituição autenticada.
+**Usuário Autenticado:**
+- `GET /api/user`: Retorna os dados do usuário/instituição logado.
 
-**Alunos:**
-- `POST /api/student`: Cadastra um novo aluno no ecossistema.
-- `GET /api/students/{id}`: Retorna os dados detalhados de um aluno específico.
-- `PUT /api/students/{id}`: Atualiza os dados cadastrais de um aluno.
+**Estudantes:**
+- `POST /api/student`: Cadastra um novo estudante.
+- `GET /api/students/{id}`: Exibe os dados de um estudante específico.
+- `PUT /api/students/{id}`: Atualiza os dados de um estudante.
 
 **Cursos:**
-- `GET /api/courses`: Lista todos os cursos cadastrados.
-- `GET /api/courses/{id}`: Detalha as informações de um curso específico.
-- `GET /api/courses/{id}/students`: Lista todos os estudantes que possuem uma credencial (badge) válida para aquele curso.
+- `GET /api/courses`: Lista todos os cursos.
+- `GET /api/courses/{id}`: Exibe os detalhes de um curso.
+- `GET /api/courses/{id}/students`: Lista os estudantes que possuem credencial neste curso.
 
 **Credenciais:**
-- `POST /api/credentials`: Vincula um aluno a um curso e gera a credencial/token exclusivo.
+- `POST /api/credentials`: Emite uma nova credencial (badge) vinculando um estudante a um curso.
+- `DELETE /api/credentials/{id}`: Remove uma credencial existente.
 
 ---
 
-## Telas e Funcionamento
+## Testes e Telas de Funcionamento (Postman)
 
-Abaixo algumas demonstrações do sistema e da estrutura do banco em funcionamento:
+Abaixo estão os testes realizados em cada endpoint da API, demonstrando o fluxo completo de funcionamento do sistema:
 
-### Banco de Dados (SQLite)
-Estrutura das tabelas sendo preenchidas via Tinker e Seeders.
-![Banco de Dados](images/database.png)
+### 1. Autenticação e Cadastro
+Cadastro de uma nova instituição de ensino e geração do token de login.
+- **Cadastro:**
+![Cadastro de Instituição](images/cadastro.png)
 
-### Consultas na API (Postman)
-Retorno das requisições e estrutura do JSON.
-![Testes no Postman](images/postman.png)
+- **Login:**
+![Login da Instituição](images/login.png)
 
-### Estrutura do Repositório
-![Repositório GitHub](images/github.png)
+### 2. Gerenciamento de Estudantes
+Operações de CRUD para os alunos do ecossistema.
+- **Adicionar Estudante:**
+![Adicionar Estudante](images/adicionar-estudante.png)
+
+- **Listar Estudantes:**
+![Listar Estudantes](images/listar-estudantes.png)
+
+- **Retornar Estudante Específico:**
+![Retornar Estudantes](images/retorna-estudantes.png)
+
+- **Atualizar Estudante:**
+![Atualizar Estudante](images/atualizar-estudante.png)
+
+### 3. Gerenciamento de Cursos
+- **Detalhes do Curso:**
+![Detalhes do Curso](images/detalhes-curso.png)
+
+### 4. Emissão e Verificação de Credenciais
+Fluxo de geração de badges e validação pública através do Hash único.
+- **Conceder Credencial (Badge):**
+![Conceder Credencial](images/conceder-credencial.png)
+
+- **Verificar Badge (Rota Pública):**
+![Verificar Badge](images/verify-badge.png)
+
+- **Deletar Credencial:**
+![Deletar Credencial](images/delete-credencial.png)
