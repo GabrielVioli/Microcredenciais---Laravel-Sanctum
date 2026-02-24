@@ -55,13 +55,13 @@ class UserController extends Controller
             ]
         );
 
-   
+
 
         $student = Student::where('email', $validatedData['email'])->firstOrFail();
         $course = Course::findOrFail($validatedData['course']);
 
-    
-        
+
+
         $userId = Auth::id();
 
         $badgeCode = Str::uuid()->toString();
@@ -128,33 +128,26 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'failed to authenticable',
-            
+
         ], 400);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
 
 
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $credential = Credential::findOrFail($id);
+
+        if($credential) {
+            $credential->delete();
+            return response()->json([
+                'message' => "Credencial deletada com sucesso",
+            ], 200);
+        }
+
+
+        return response()->json([
+            'message' => "Erro ao deletar credencial",
+        ], 400);
     }
 }

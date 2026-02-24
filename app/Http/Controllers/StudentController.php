@@ -12,7 +12,7 @@ use App\Models\User;
 class StudentController extends Controller
 {
 
-  
+
     public function store(Request $request)
     {
         $validateData = $request->validate([
@@ -50,7 +50,7 @@ class StudentController extends Controller
 
     }
 
-   
+
     public function update(Request $request, string $id)
     {
       $validatedData = $request->validate([

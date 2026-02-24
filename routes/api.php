@@ -21,7 +21,11 @@ Route::middleware('auth:sanctum')->group(function() {
 
     Route::get('/courses/{id}/students', [CourseController::class, 'Credentials']);
 
+    Route::delete('/credential/{id}/delete', [UserController::class, 'destroy']);
 });
+
+
+
 
 
 #ROTAS PUBLICAS

@@ -9,17 +9,16 @@ use App\Models\Credential;
 
 use Illuminate\Support\Facades\Auth;
 
-class CourseController extends Controller
-{
- 
+class CourseController extends Controller {
+
     public function index()
     {
         $courses = Course::where('user_id', Auth::id())->get();
         return response()->json($courses, 200);
-        
+
     }
 
-  
+
     public function credentials($id) {
     $course = Course::findOrFail($id);
 
@@ -34,7 +33,7 @@ class CourseController extends Controller
             'students' => $studentsWithBadges
         ], 200);
     }
-    
+
 
     public function show(string $id)
     {
@@ -48,7 +47,7 @@ class CourseController extends Controller
 
     }
 
-  
+
     public function update(Request $request, string $id)
     {
         $validatedData = $request->validate([
@@ -70,5 +69,5 @@ class CourseController extends Controller
             'data' => $course
         ], 200);
     }
- 
+
 }
